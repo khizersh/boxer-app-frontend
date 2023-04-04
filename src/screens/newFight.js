@@ -13,6 +13,8 @@ import Carousel from 'react-elastic-carousel';
 import Item from "./item";
 import blackImage from "./A_black_image.jpg"
 
+var currentTimePlayer = 0;
+var VideoFullLength = 0;
 const baseUrl = "http://localhost:4000"
 export default function NewFight() {
     
@@ -55,6 +57,8 @@ export default function NewFight() {
     const [markers, setMarkers] = useState({})
    
     const [newFight, setNewFight] = useState([])
+
+    const [videoPaused , setVideoPaused] = useState(true)
    
 
     const handleProgressClick = () => {
@@ -62,14 +66,57 @@ export default function NewFight() {
         playingRef.current = !playingRef.current 
     }
 
+
+
+    // setInterval(() => {
+
+    //     try {
+
+    //             let currentTime = playerRef?.current?.getCurrentTime();
+    //             let tempPlayedSeconds = {
+    //                 [playIndex]: currentTime ? currentTime : 0
+    //             }
+    //             if(progress[playIndex] !== currentTime){
+    //                 setProgress(tempPlayedSeconds);
+    //                 progressRef.current = tempPlayedSeconds
+    //             } 
+    //             console.log("tempPlayedSeconds : ",tempPlayedSeconds);
+
+    //             // if(VideoFullLength == 0){
+    //             //     let tempLoadedSeconds = {
+    //             //         [playIndex]: playerRef.current.getDuration()
+    //             //     }
+    //             //     VideoFullLength = tempLoadedSeconds;
+    //             //     setVideoLength(tempLoadedSeconds)
+    //             // }
+            
+    //     } catch (error) {
+            
+    //     }
+
+    // }, 3000);
+    useEffect(() => {
+        document.addEventListener("progress", (event) => {
+            console.log("video progress : ",event);
+        });
+   
+    }, [])
+
+  
+    
+    
+
     useEffect(()=>{
+
         
         document.addEventListener('keydown', (e) => {
+
+          
+          
             if (e.code === "Space") {
                 // if(playingRef.current){
                 //     getCurrentImageInstance()
                 // }
-                console.log("current Time : ",  playingRef.current);
                 setPlaying(!playingRef.current)
                 playingRef.current = !playingRef.current 
             }
@@ -102,6 +149,30 @@ export default function NewFight() {
             }
         });
     },[])
+
+    const changeProgressHandler = (progress) =>{
+      
+        onProgressChange();
+        
+    }
+
+    function onProgressChange () {
+        let tempPlayedSeconds = {
+            [playIndex]:playerRef.current.getCurrentTime()
+        }
+        console.log("tempPlayedSeconds : ",tempPlayedSeconds);
+        setProgress(tempPlayedSeconds);
+        progressRef.current = tempPlayedSeconds
+        
+        if(VideoFullLength == 0){
+            let tempLoadedSeconds = {
+                [playIndex]: playerRef.current.getDuration()
+            }
+            VideoFullLength = tempLoadedSeconds;
+            setVideoLength(tempLoadedSeconds)
+        }
+    }
+
 
     function extractFrames(fileee) {
         var video = document.createElement('video');
@@ -370,17 +441,6 @@ export default function NewFight() {
 
     
 
-    const changeProgressHandler = (progress) =>{
-        let tempLoadedSeconds = {
-            [playIndex]:progress.loadedSeconds
-        }
-        let tempPlayedSeconds = {
-            [playIndex]:progress.playedSeconds
-        }
-        setProgress(tempPlayedSeconds);
-        progressRef.current = tempPlayedSeconds
-        setVideoLength(tempLoadedSeconds)
-    }
 
     const boxerACall = () => {
 
@@ -413,18 +473,19 @@ export default function NewFight() {
                 tempMarker[playIndex] = [...markers[playIndex],{ time: progress[playIndex], fighter: 1, name: boxerName }]
                 tempBoxerA[playIndex] = [...boxerName[playIndex],boxerName]
             }
-
+            console.log("tempMarker Boxer A: ",tempMarker);
+            
             setMarkers(tempMarker)
             setBoxerA(tempBoxerA);
-
-            setPlaying(!playingRef.current)
+            
+            setPlaying(!playingRef.current) 
             playingRef.current = !playingRef.current
         } else {
             alert("please enter name")
         }
-
+        
     }
-
+    
     const boxerBCall = () => {
         if (boxerName && boxerName != "") {
             console.log(boxerB)
@@ -434,10 +495,10 @@ export default function NewFight() {
             } 
             setBoxerBObj(temp)
             setBoxerName(null);
-
+            
             let tempMarker = {}
             let tempBoxerB = {}
-
+            
             if(!Object.keys(markers).find(element => element == playIndex) && Object.keys(markers).length == 0){
                 tempMarker[playIndex] = [{ time: progress[playIndex], fighter: 2, name: boxerName }]
                 tempBoxerB[playIndex] = [boxerName]
@@ -452,7 +513,7 @@ export default function NewFight() {
                 tempMarker[playIndex] = [...markers[playIndex],{ time: progress[playIndex], fighter: 2, name: boxerName }]
                 tempBoxerB[playIndex] = [...boxerName[playIndex],boxerName]
             }
-
+            
             setMarkers(tempMarker)
             setBoxerA(tempBoxerB);
             setPlaying(!playingRef.current)
@@ -469,6 +530,8 @@ export default function NewFight() {
         }, {});
         return map
     }
+
+
 
 
     return (
@@ -501,9 +564,8 @@ export default function NewFight() {
                         controls={true}
                         width="379"
                         height="300"
-                        // onPause={(e) => {
-                        //     handlePause(e)
-                        // }}
+                        onPlay={() => setVideoPaused(false)}
+                        onPause={(e) => setVideoPaused(true) }
                         onEnded={(e) => nextVideo(e)}
                     /> : null
                 }
