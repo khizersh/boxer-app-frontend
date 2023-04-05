@@ -13,7 +13,7 @@ import Carousel from 'react-elastic-carousel';
 import Item from "./item";
 import blackImage from "./A_black_image.jpg"
 
-var currentTimePlayer = 0;
+window.currentTimePlayer = 0;
 var VideoFullLength = 0;
 const baseUrl = "http://localhost:4000"
 export default function NewFight() {
@@ -58,7 +58,7 @@ export default function NewFight() {
    
     const [newFight, setNewFight] = useState([])
 
-    const [videoPaused , setVideoPaused] = useState(true)
+    const [videoCurrentTime , setVideoCurrentTime] = useState(0)
    
 
     const handleProgressClick = () => {
@@ -95,15 +95,6 @@ export default function NewFight() {
     //     }
 
     // }, 3000);
-    useEffect(() => {
-        document.addEventListener("progress", (event) => {
-            console.log("video progress : ",event);
-        });
-   
-    }, [])
-
-  
-    
     
 
     useEffect(()=>{
@@ -111,18 +102,28 @@ export default function NewFight() {
         
         document.addEventListener('keydown', (e) => {
 
-          
-          
+            setVideoCurrentTime(0);
             if (e.code === "Space") {
                 // if(playingRef.current){
-                //     getCurrentImageInstance()
-                // }
-                setPlaying(!playingRef.current)
-                playingRef.current = !playingRef.current 
-            }
-            if (e.code === "KeyK") {
-                // if(playingRef.current){
-                //     getCurrentImageInstance()
+                    //     getCurrentImageInstance()
+                    // }
+                    // currentTimePlayer =  playerRef.current.getCurrentTime();
+                    let currentT = playerRef.current.getCurrentTime();
+                    console.log("time : ",currentT);
+                    setPlaying(!playingRef.current)
+                    playingRef.current = !playingRef.current 
+
+                    window.currentTimePlayer = currentT;
+                    localStorage.setItem('time' , currentT)
+                    playerRef.current.seekTo(currentT)
+                    progressRef.current[playIndexRef.current] = currentT;
+                 
+                }
+                else{
+                    window.currentTimePlayer = 0;
+                    if (e.code === "KeyK") {
+                        // if(playingRef.current){
+                            //     getCurrentImageInstance()
                 // }
                 setPlaying( !playingRef.current)
                 playingRef.current = !playingRef.current
@@ -146,6 +147,7 @@ export default function NewFight() {
                     progressRef.current[playIndexRef.current] = progressRef.current[playIndexRef.current] - 1
                 }
                 // setProgress(progress - 1)
+            }
             }
         });
     },[])
@@ -459,22 +461,26 @@ export default function NewFight() {
             let tempMarker = {}
             let tempBoxerA = {}
 
+            window.currentTimePlayer = localStorage.getItem('time');
             if(!Object.keys(markers).find(element => element == playIndex) && Object.keys(markers).length == 0){
-                tempMarker[playIndex] = [{ time: progress[playIndex], fighter: 1, name: boxerName }]
+                let time = window.currentTimePlayer  ? window.currentTimePlayer : progress[playIndex];
+                tempMarker[playIndex] = [{ time: time, fighter: 1, name: boxerName }]
                 tempBoxerA[playIndex] = [boxerName]
             }else if(!Object.keys(markers).find(element => element == playIndex) && Object.keys(markers).length > 0){
+                let time = window.currentTimePlayer  ? window.currentTimePlayer : progress[playIndex];
                 tempMarker = {...markers}
                 tempBoxerA = {...boxerA}
-                tempMarker[playIndex] = [{ time: progress[playIndex], fighter: 1, name: boxerName }]
+                tempMarker[playIndex] = [{ time: time, fighter: 1, name: boxerName }]
                 tempBoxerA[playIndex] = [boxerName]
             }else if (Object.keys(markers).find(element => element == playIndex)) {
+                let time = window.currentTimePlayer  ? window.currentTimePlayer : progress[playIndex];
                 tempMarker = {...markers}
                 tempBoxerA = {...boxerA}
-                tempMarker[playIndex] = [...markers[playIndex],{ time: progress[playIndex], fighter: 1, name: boxerName }]
+                tempMarker[playIndex] = [...markers[playIndex],{ time: time, fighter: 1, name: boxerName }]
                 tempBoxerA[playIndex] = [...boxerName[playIndex],boxerName]
             }
-            console.log("tempMarker Boxer A: ",tempMarker);
-            
+          
+    
             setMarkers(tempMarker)
             setBoxerA(tempBoxerA);
             
@@ -499,18 +505,22 @@ export default function NewFight() {
             let tempMarker = {}
             let tempBoxerB = {}
             
+            window.currentTimePlayer = localStorage.getItem('time');
             if(!Object.keys(markers).find(element => element == playIndex) && Object.keys(markers).length == 0){
-                tempMarker[playIndex] = [{ time: progress[playIndex], fighter: 2, name: boxerName }]
+                let time = window.currentTimePlayer  ? window.currentTimePlayer : progress[playIndex];
+                tempMarker[playIndex] = [{ time: time, fighter: 2, name: boxerName }]
                 tempBoxerB[playIndex] = [boxerName]
             }else if(!Object.keys(markers).find(element => element == playIndex) && Object.keys(markers).length > 0){
+                let time = window.currentTimePlayer  ? window.currentTimePlayer : progress[playIndex];
                 tempMarker = {...markers}
                 tempBoxerB = {...boxerB}
-                tempMarker[playIndex] = [{ time: progress[playIndex], fighter: 2, name: boxerName }]
+                tempMarker[playIndex] = [{ time: time, fighter: 2, name: boxerName }]
                 tempBoxerB[playIndex] = [boxerName]
             }else if (Object.keys(markers).find(element => element == playIndex)) {
+                let time = window.currentTimePlayer  ? window.currentTimePlayer : progress[playIndex];
                 tempMarker = {...markers}
                 tempBoxerB = {...boxerB}
-                tempMarker[playIndex] = [...markers[playIndex],{ time: progress[playIndex], fighter: 2, name: boxerName }]
+                tempMarker[playIndex] = [...markers[playIndex],{ time: time, fighter: 2, name: boxerName }]
                 tempBoxerB[playIndex] = [...boxerName[playIndex],boxerName]
             }
             
@@ -564,8 +574,8 @@ export default function NewFight() {
                         controls={true}
                         width="379"
                         height="300"
-                        onPlay={() => setVideoPaused(false)}
-                        onPause={(e) => setVideoPaused(true) }
+                        // onPlay={() => setVideoPaused(false)}
+                        // onPause={(e) => setVideoPaused(true) }
                         onEnded={(e) => nextVideo(e)}
                     /> : null
                 }
